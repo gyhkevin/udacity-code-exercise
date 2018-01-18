@@ -7,21 +7,22 @@ getcontext().prec = 30
 
 
 class Line(object):
-    """docstring for Line"""
+    """编写直线函数类"""
     NO_NONZERO_ELTS_FOUND_MSG = 'No nonzero elements found'
 
     def __init__(self, normal_vector=None, constant_term=None):
         self.dimension = 2
-
+        # 直线等式的常量
         if not normal_vector:
             all_zeros = ['0'] * self.dimension
             normal_vector = Vector(all_zeros)
         self.normal_vector = normal_vector
-
+        # 直线法向量
         if not constant_term:
             constant_term = Decimal('0')
         self.constant_term = Decimal(constant_term)
-
+        # 在二维空间里，通过法向量，可以快速获得直线的方向向量，法向量更容易类推到多维空间
+        # 选择一个系数不为零的变量，并将另一个变量设为零，快速算出基准点
         self.set_basepoint()
 
 
@@ -45,6 +46,7 @@ class Line(object):
             else:
                 raise e
 
+    # str函数使用变量x1, x2, 输出直线等式的标准形式，可以类推到多维空间
     def __str__(self):
 
         num_decimal_places = 3
@@ -90,6 +92,7 @@ class Line(object):
 
         return output
 
+    # 找到等式的第一个非零系数
     @staticmethod
     def first_nonzero_index(iterable):
         for k, item in enumerate(iterable):
@@ -97,8 +100,9 @@ class Line(object):
                 return k
         raise Exception(Line.NO_NONZERO_ELTS_FOUND_MSG)
 
+    # 检查两条直线是否相同
     def __eq__(self, ell):
-
+        # 如果某条直线的法向量是零向量
         if self.normal_vector.is_zero():
             if not ell.normal_vector.is_zero():
                 return False
@@ -107,18 +111,19 @@ class Line(object):
                 return MyDecimal(diff).is_near_zero()
         elif ell.normal_vector.is_zero():
             return False
-
+        # 检查两条直线是否平行
         if not self.is_parallel_to(ell):
             return False
-
+        # 从每条线上选择一个点，然后观察连接这两个点的向量
         x0 = self.basepoint
         y0 = ell.basepoint
-
+        # 计算连接这两条直线基准点的向量
         basepoint_difference = x0.minus(y0)
-
+        # 如果该向量与两条直线的法向量正交，那么这两条直线是同一直线
         n = self.normal_vector
         return basepoint_difference.is_orthogonal_to(n)
 
+    # 判断法向量是否平行
     def is_parallel_to(self, ell):
         n1 = self.normal_vector
         n2 = ell.normal_vector
@@ -139,6 +144,7 @@ class Line(object):
             return Vector([x_numerator, y_numerator]).times_scalar(one_over_denom)
 
         except ZeroDivisionError:
+            # 除数为零的错误
             if self == ell:
                 return self
             else:
@@ -146,22 +152,7 @@ class Line(object):
 
 
 class MyDecimal(Decimal):
+    """拓展Decimal类"""
+    # 检测某个数值是否在误差范围内，避免因为四舍五入，而出现错误答案
     def is_near_zero(self, eps=1e-10):
         return abs(self) < eps
-
-
-ell1 = Line(normal_vector=Vector(['4.046', '2.836']), constant_term='1.21')
-ell2 = Line(normal_vector=Vector(['10.115', '7.09']), constant_term='3.025')
-print 'intersection 1:', ell1.intersection_with(ell2)
-# print('intersection 1:', ell1.intersection_with(ell2))
-
-ell3 = Line(normal_vector=Vector(['7.204', '3.182']), constant_term='8.68')
-ell4 = Line(normal_vector=Vector(['8.172', '4.114']), constant_term='9.883')
-print 'intersection 2:', ell3.intersection_with(ell4)
-# print('intersection 2:', ell3.intersection_with(ell4))
-
-ell5 = Line(normal_vector=Vector(['1.182', '5.562']), constant_term='6.744')
-ell6 = Line(normal_vector=Vector(['1.773', '8.343']), constant_term='9.525')
-print 'intersection 3:', ell5.intersection_with(ell6)
-# print('intersection 3:', ell5.intersection_with(ell6))
-
